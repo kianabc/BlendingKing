@@ -1,0 +1,1220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Blending King 👑</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>👑</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --primary: #FF6B35;
+  --primary-dark: #E85D26;
+  --primary-light: #FFB088;
+  --bg: #FFF3E0;
+  --surface: #FFFFFF;
+  --text: #37474F;
+  --text-light: #78909C;
+  --green: #4CAF50;
+  --green-light: #C8E6C9;
+  --yellow: #FFC107;
+  --yellow-light: #FFF9C4;
+  --red: #FF7043;
+  --red-light: #FFCCBC;
+  --blue: #42A5F5;
+  --blue-light: #BBDEFB;
+  --purple: #AB47BC;
+  --radius: 16px;
+  --radius-sm: 10px;
+  --nav-h: 70px;
+  --sidebar-w: 220px;
+  --shadow: 0 2px 12px rgba(0,0,0,0.08);
+  --shadow-lg: 0 4px 24px rgba(0,0,0,0.12);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; overflow: hidden; }
+body {
+  font-family: 'Nunito', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+h1, h2, h3, .brand { font-family: 'Fredoka One', cursive; }
+#app {
+  height: 100%;
+  padding-bottom: calc(var(--nav-h) + env(safe-area-inset-bottom));
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.view { display: none; padding: 20px 16px 30px; max-width: 600px; margin: 0 auto; }
+.view.active { display: block; }
+
+/* Welcome */
+#view-welcome {
+  display: none; height: 100%; justify-content: center; align-items: center;
+  text-align: center; padding: 20px;
+}
+#view-welcome.active { display: flex; flex-direction: column; }
+.welcome-crown { font-size: 80px; margin-bottom: 8px; animation: crownBounce 2s ease infinite; }
+.welcome-title { font-size: 42px; color: var(--primary); margin-bottom: 4px; }
+.welcome-sub { font-size: 18px; color: var(--text-light); margin-bottom: 32px; }
+.welcome-input {
+  font-family: 'Nunito', sans-serif; font-size: 22px; font-weight: 700;
+  padding: 14px 20px; border: 3px solid var(--primary-light); border-radius: var(--radius);
+  outline: none; text-align: center; width: 100%; max-width: 300px; margin-bottom: 20px;
+  transition: border-color 0.2s;
+}
+.welcome-input:focus { border-color: var(--primary); }
+.btn {
+  font-family: 'Fredoka One', cursive; font-size: 22px; color: #fff;
+  background: var(--primary); border: none; border-radius: var(--radius);
+  padding: 14px 40px; cursor: pointer; transition: transform 0.15s, background 0.2s;
+  box-shadow: 0 4px 0 var(--primary-dark);
+}
+.btn:active { transform: translateY(2px); box-shadow: 0 2px 0 var(--primary-dark); }
+.btn:disabled { opacity: 0.5; }
+.btn-blue { background: var(--blue); box-shadow: 0 4px 0 #1E88E5; }
+.btn-green { background: var(--green); box-shadow: 0 4px 0 #388E3C; }
+.btn-purple { background: var(--purple); box-shadow: 0 4px 0 #7B1FA2; }
+.btn-small { font-size: 16px; padding: 10px 24px; }
+
+/* Dashboard */
+.dash-header { text-align: center; margin-bottom: 24px; }
+.dash-greeting { font-size: 28px; color: var(--primary); }
+.dash-level-badge {
+  display: inline-block; background: var(--primary-light); color: var(--primary-dark);
+  font-size: 14px; font-weight: 800; padding: 4px 14px; border-radius: 20px; margin-top: 4px;
+}
+.progress-ring-wrap { display: flex; justify-content: center; margin: 20px 0; }
+.progress-ring-wrap svg { width: 160px; height: 160px; }
+.progress-ring-bg { fill: none; stroke: #FFE0CC; stroke-width: 12; }
+.progress-ring-fg { fill: none; stroke: var(--primary); stroke-width: 12; stroke-linecap: round;
+  transition: stroke-dashoffset 0.8s ease; transform: rotate(-90deg); transform-origin: center; }
+.progress-ring-text { font-family: 'Fredoka One'; font-size: 36px; fill: var(--primary); text-anchor: middle; dominant-baseline: central; }
+.progress-ring-label { font-family: 'Nunito'; font-size: 12px; fill: var(--text-light); text-anchor: middle; }
+.stats-row { display: flex; gap: 10px; margin-bottom: 20px; }
+.stat-card {
+  flex: 1; background: var(--surface); border-radius: var(--radius); padding: 14px 10px;
+  text-align: center; box-shadow: var(--shadow);
+}
+.stat-icon { font-size: 28px; }
+.stat-val { font-family: 'Fredoka One'; font-size: 24px; color: var(--text); }
+.stat-label { font-size: 12px; color: var(--text-light); font-weight: 700; }
+.dash-practice-btn { display: flex; justify-content: center; margin: 20px 0; }
+.dash-practice-btn .btn { font-size: 26px; padding: 16px 50px; }
+.level-cards { display: flex; flex-direction: column; gap: 10px; }
+.level-card {
+  background: var(--surface); border-radius: var(--radius); padding: 16px;
+  display: flex; align-items: center; gap: 14px; box-shadow: var(--shadow);
+  cursor: pointer; transition: transform 0.15s;
+}
+.level-card:active { transform: scale(0.97); }
+.level-card.locked { opacity: 0.5; cursor: default; }
+.level-card.locked:active { transform: none; }
+.level-icon { font-size: 36px; }
+.level-info { flex: 1; }
+.level-name { font-family: 'Fredoka One'; font-size: 18px; }
+.level-desc { font-size: 13px; color: var(--text-light); }
+.level-progress { width: 100%; height: 8px; background: #eee; border-radius: 4px; margin-top: 6px; }
+.level-progress-fill { height: 100%; border-radius: 4px; transition: width 0.5s ease; }
+.level-lock { font-size: 24px; }
+.level-check { font-size: 24px; color: var(--green); }
+
+/* Practice / Quiz */
+.quiz-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.quiz-progress { flex: 1; height: 10px; background: #FFE0CC; border-radius: 5px; margin: 0 12px; }
+.quiz-progress-fill { height: 100%; background: var(--primary); border-radius: 5px; transition: width 0.3s; }
+.quiz-count { font-family: 'Fredoka One'; font-size: 18px; color: var(--primary); }
+.quiz-streak { font-size: 14px; font-weight: 800; color: var(--red); }
+.quiz-card {
+  background: var(--surface); border-radius: var(--radius); padding: 24px 20px;
+  text-align: center; box-shadow: var(--shadow-lg); min-height: 340px;
+  display: flex; flex-direction: column; justify-content: center; align-items: center;
+}
+.quiz-instruction { font-size: 18px; color: var(--text-light); font-weight: 700; margin-bottom: 8px; }
+.quiz-emoji { font-size: 100px; margin: 8px 0 12px; }
+.quiz-img { width: 180px; height: 180px; object-fit: cover; border-radius: var(--radius); margin: 8px 0 12px; box-shadow: var(--shadow); }
+.quiz-mode-label {
+  display: inline-block; font-size: 12px; font-weight: 800; padding: 3px 10px;
+  border-radius: 12px; margin-bottom: 12px;
+}
+.mode-hear { background: var(--blue-light); color: #1565C0; }
+.mode-see { background: var(--green-light); color: #2E7D32; }
+
+/* Sound bubbles for Hear & Pick */
+.sound-bubbles { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin: 16px 0; }
+.sound-bubble {
+  width: 60px; height: 60px; border-radius: 50%; background: var(--blue-light);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Fredoka One'; font-size: 22px; color: var(--blue);
+  transition: transform 0.3s, background 0.3s;
+}
+.sound-bubble.active { background: var(--blue); color: #fff; transform: scale(1.2); animation: bubblePop 0.4s ease; }
+.sound-bubble.syllable { width: auto; min-width: 70px; padding: 0 16px; border-radius: 30px; font-size: 20px; }
+.replay-btn {
+  background: none; border: 2px solid var(--blue); color: var(--blue);
+  border-radius: 30px; padding: 8px 20px; font-family: 'Nunito'; font-size: 14px;
+  font-weight: 700; cursor: pointer; margin-top: 8px; transition: background 0.2s;
+}
+.replay-btn:active { background: var(--blue-light); }
+
+/* Choices for Hear & Pick */
+.choices { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; margin-top: 16px; }
+.choice-btn {
+  background: var(--surface); border: 3px solid #E0E0E0; border-radius: var(--radius);
+  padding: 14px 10px; cursor: pointer; transition: transform 0.15s, border-color 0.2s;
+  text-align: center;
+}
+.choice-btn:active { transform: scale(0.95); }
+.choice-emoji { font-size: 36px; }
+.choice-word { font-family: 'Fredoka One'; font-size: 22px; color: var(--text); margin-top: 4px; }
+.choice-btn.correct { border-color: var(--green); background: var(--green-light); animation: correctPop 0.4s ease; }
+.choice-btn.wrong { border-color: var(--red); animation: wrongShake 0.4s ease; }
+
+/* Phoneme taps for See & Sound */
+.tap-word { font-family: 'Fredoka One'; font-size: 36px; color: var(--text); margin-bottom: 8px; }
+.tap-segments { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin: 16px 0; }
+.tap-seg {
+  min-width: 60px; height: 64px; border-radius: var(--radius-sm);
+  background: #F5F5F5; border: 3px solid #E0E0E0;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Fredoka One'; font-size: 26px; color: var(--text-light);
+  cursor: pointer; transition: all 0.2s; padding: 0 14px;
+}
+.tap-seg.current { border-color: var(--primary); background: #FFF3E0; color: var(--primary); animation: pulse 1s ease infinite; }
+.tap-seg.done { border-color: var(--green); background: var(--green-light); color: var(--green); }
+.tap-seg.syllable { min-width: 80px; font-size: 22px; padding: 0 18px; }
+.tap-emoji { font-size: 48px; margin-bottom: 8px; }
+
+/* Results */
+#view-results .quiz-card { min-height: auto; padding: 30px 20px; }
+.results-title { font-size: 28px; color: var(--primary); margin-bottom: 8px; }
+.results-stars { font-size: 48px; margin: 12px 0; }
+.results-stat { font-size: 16px; color: var(--text-light); margin: 4px 0; }
+.results-stat b { color: var(--text); }
+.results-buttons { display: flex; gap: 12px; margin-top: 20px; justify-content: center; flex-wrap: wrap; }
+
+/* Word Grid */
+.grid-tabs { display: flex; gap: 8px; margin-bottom: 16px; overflow-x: auto; }
+.grid-tab {
+  font-family: 'Fredoka One'; font-size: 14px; padding: 8px 16px;
+  border-radius: 20px; border: 2px solid var(--primary-light); background: var(--surface);
+  color: var(--primary); cursor: pointer; white-space: nowrap; transition: all 0.2s;
+}
+.grid-tab.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+.grid-tab.locked { opacity: 0.4; cursor: default; }
+.word-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 8px; }
+.word-tile {
+  background: var(--surface); border-radius: var(--radius-sm); padding: 10px 6px;
+  text-align: center; box-shadow: var(--shadow); cursor: pointer; transition: transform 0.15s;
+  border-left: 4px solid #E0E0E0;
+}
+.word-tile:active { transform: scale(0.95); }
+.word-tile.mastered { border-left-color: var(--green); }
+.word-tile.learning { border-left-color: var(--yellow); }
+.word-tile.new { border-left-color: #E0E0E0; }
+.word-tile-emoji { font-size: 24px; }
+.word-tile-img { width: 50px; height: 50px; object-fit: cover; border-radius: 6px; }
+.word-tile-word { font-family: 'Fredoka One'; font-size: 14px; margin-top: 2px; }
+
+/* Achievements */
+.badge-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.badge-card {
+  background: var(--surface); border-radius: var(--radius); padding: 16px;
+  text-align: center; box-shadow: var(--shadow); transition: transform 0.15s;
+}
+.badge-card.locked { opacity: 0.35; }
+.badge-icon { font-size: 40px; }
+.badge-name { font-family: 'Fredoka One'; font-size: 14px; margin-top: 6px; }
+.badge-desc { font-size: 11px; color: var(--text-light); margin-top: 2px; }
+
+/* Bottom Nav */
+#bottom-nav {
+  position: fixed; bottom: 0; left: 0; right: 0; height: var(--nav-h);
+  background: var(--surface); border-top: 1px solid #E0E0E0;
+  display: flex; justify-content: space-around; align-items: center;
+  padding-bottom: env(safe-area-inset-bottom); z-index: 100;
+  box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+}
+#bottom-nav.hidden { display: none; }
+.nav-btn {
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  background: none; border: none; cursor: pointer; padding: 6px 12px;
+  color: var(--text-light); transition: color 0.2s; font-family: 'Nunito';
+}
+.nav-btn.active { color: var(--primary); }
+.nav-icon { font-size: 26px; }
+.nav-label { font-size: 11px; font-weight: 800; }
+
+/* Confetti */
+#confetti-container { position: fixed; top: 0; left: 0; right: 0; bottom: 0; pointer-events: none; z-index: 1000; overflow: hidden; }
+.confetti {
+  position: absolute; top: -20px; width: 10px; height: 10px;
+  border-radius: 2px; animation: confettiFall 2.5s ease-in forwards;
+}
+.star-float {
+  position: fixed; font-size: 30px; pointer-events: none; z-index: 999;
+  animation: starFloat 0.8s ease-out forwards;
+}
+/* Banner */
+#banner {
+  position: fixed; top: -80px; left: 50%; transform: translateX(-50%);
+  background: var(--green); color: #fff; font-family: 'Fredoka One'; font-size: 18px;
+  padding: 14px 28px; border-radius: 0 0 var(--radius) var(--radius);
+  z-index: 1001; white-space: nowrap; animation: none;
+  box-shadow: var(--shadow-lg);
+}
+#banner.show { animation: bannerSlide 3s ease forwards; }
+
+/* Firebase Sync UI */
+.sync-section { margin-top: 24px; padding-top: 16px; border-top: 1px solid #eee; text-align: center; }
+.sync-section h3 { font-size: 16px; margin-bottom: 8px; }
+.sync-pin { font-family: 'Fredoka One'; font-size: 32px; letter-spacing: 6px; color: var(--primary); margin: 8px 0; }
+.sync-input {
+  font-family: 'Nunito'; font-size: 20px; font-weight: 700; text-align: center;
+  padding: 10px 16px; border: 2px solid #E0E0E0; border-radius: var(--radius-sm);
+  width: 160px; letter-spacing: 4px; outline: none;
+}
+.sync-input:focus { border-color: var(--primary); }
+.sync-status { font-size: 13px; color: var(--text-light); margin-top: 6px; }
+
+/* Animations */
+@keyframes crownBounce { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+@keyframes correctPop { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+@keyframes wrongShake { 0%,100% { transform: translateX(0); } 20%,60% { transform: translateX(-6px); } 40%,80% { transform: translateX(6px); } }
+@keyframes starFloat { 0% { opacity: 1; transform: translateY(0) scale(1); } 100% { opacity: 0; transform: translateY(-80px) scale(1.5); } }
+@keyframes confettiFall { 0% { opacity: 1; transform: translateY(0) rotate(0); } 100% { opacity: 0; transform: translateY(100vh) rotate(720deg); } }
+@keyframes bannerSlide { 0% { top: -80px; } 10% { top: 0; } 85% { top: 0; } 100% { top: -80px; } }
+@keyframes bubblePop { 0% { transform: scale(0.5); } 60% { transform: scale(1.25); } 100% { transform: scale(1.2); } }
+@keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.08); } }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+.fade-in { animation: fadeIn 0.3s ease; }
+
+/* Desktop sidebar */
+@media (min-width: 768px) {
+  #bottom-nav {
+    top: 0; bottom: 0; left: 0; right: auto; width: var(--sidebar-w);
+    flex-direction: column; justify-content: flex-start; padding: 24px 0 0;
+    border-top: none; border-right: 1px solid #E0E0E0; height: 100%;
+    box-shadow: 2px 0 10px rgba(0,0,0,0.05);
+  }
+  .nav-btn { flex-direction: row; gap: 10px; padding: 14px 24px; width: 100%; justify-content: flex-start; }
+  .nav-label { font-size: 14px; }
+  #app { padding-bottom: 0; padding-left: var(--sidebar-w); }
+  .view { padding: 30px 24px; }
+}
+</style>
+</head>
+<body>
+
+<div id="app">
+  <!-- WELCOME -->
+  <div id="view-welcome" class="view active">
+    <div class="welcome-crown">👑</div>
+    <h1 class="welcome-title">Blending King</h1>
+    <p class="welcome-sub">Learn to blend sounds into words!</p>
+    <input class="welcome-input" id="name-input" placeholder="Your name" maxlength="20" autocomplete="off">
+    <button class="btn" id="start-btn" disabled>Let's Go!</button>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div id="view-dashboard" class="view">
+    <div class="dash-header">
+      <h1 class="dash-greeting" id="dash-greeting">Hi! 👑</h1>
+      <div class="dash-level-badge" id="dash-level-badge">Level 1</div>
+    </div>
+    <div class="progress-ring-wrap">
+      <svg viewBox="0 0 160 160">
+        <circle class="progress-ring-bg" cx="80" cy="80" r="66"/>
+        <circle class="progress-ring-fg" id="progress-ring" cx="80" cy="80" r="66" stroke-dasharray="414.69" stroke-dashoffset="414.69"/>
+        <text class="progress-ring-text" id="progress-pct" x="80" y="74">0%</text>
+        <text class="progress-ring-label" x="80" y="96">mastered</text>
+      </svg>
+    </div>
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-icon">⭐</div><div class="stat-val" id="stat-stars">0</div><div class="stat-label">Stars</div></div>
+      <div class="stat-card"><div class="stat-icon">🔥</div><div class="stat-val" id="stat-streak">0</div><div class="stat-label">Day Streak</div></div>
+      <div class="stat-card"><div class="stat-icon">📖</div><div class="stat-val" id="stat-words">0</div><div class="stat-label">Words</div></div>
+    </div>
+    <div class="dash-practice-btn"><button class="btn" id="practice-btn">Practice! 🎮</button></div>
+    <h3 style="margin-bottom:10px;">Levels</h3>
+    <div class="level-cards" id="level-cards"></div>
+    <div class="sync-section" id="sync-section">
+      <h3>📱 Sync Devices</h3>
+      <button class="btn btn-small btn-blue" id="gen-pin-btn">Get Sync PIN</button>
+      <div id="sync-pin-display" style="display:none"><div class="sync-pin" id="sync-pin-code"></div><div class="sync-status">Share this PIN on another device (expires in 24h)</div></div>
+      <div style="margin-top:12px">
+        <input class="sync-input" id="sync-pin-input" placeholder="000000" maxlength="6" inputmode="numeric" pattern="[0-9]*">
+        <br><button class="btn btn-small btn-purple" id="link-pin-btn" style="margin-top:8px;">Link Device</button>
+      </div>
+      <div class="sync-status" id="sync-status"></div>
+    </div>
+  </div>
+
+  <!-- PRACTICE -->
+  <div id="view-practice" class="view">
+    <div class="quiz-header">
+      <span class="quiz-count" id="quiz-count">1/8</span>
+      <div class="quiz-progress"><div class="quiz-progress-fill" id="quiz-progress"></div></div>
+      <span class="quiz-streak" id="quiz-streak"></span>
+    </div>
+    <div class="quiz-card" id="quiz-card"></div>
+  </div>
+
+  <!-- RESULTS -->
+  <div id="view-results" class="view">
+    <div class="quiz-card">
+      <div class="results-title" id="results-title">Great Job!</div>
+      <div class="results-stars" id="results-stars"></div>
+      <div class="results-stat" id="results-correct"></div>
+      <div class="results-stat" id="results-streak"></div>
+      <div class="results-stat" id="results-new"></div>
+      <div class="results-buttons">
+        <button class="btn btn-green" id="play-again-btn">Play Again! 🎮</button>
+        <button class="btn btn-small" id="home-btn">Home</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- WORD GRID -->
+  <div id="view-grid" class="view">
+    <h2 style="margin-bottom:12px;">📖 Word Grid</h2>
+    <div class="grid-tabs" id="grid-tabs"></div>
+    <div class="word-grid" id="word-grid"></div>
+  </div>
+
+  <!-- ACHIEVEMENTS -->
+  <div id="view-achievements" class="view">
+    <h2 style="margin-bottom:16px;">🏆 Achievements</h2>
+    <div class="badge-grid" id="badge-grid"></div>
+  </div>
+</div>
+
+<nav id="bottom-nav" class="hidden">
+  <button class="nav-btn active" data-view="dashboard"><span class="nav-icon">🏠</span><span class="nav-label">Home</span></button>
+  <button class="nav-btn" data-view="practice-start"><span class="nav-icon">🎮</span><span class="nav-label">Practice</span></button>
+  <button class="nav-btn" data-view="grid"><span class="nav-icon">📖</span><span class="nav-label">Words</span></button>
+  <button class="nav-btn" data-view="achievements"><span class="nav-icon">🏆</span><span class="nav-label">Stars</span></button>
+</nav>
+
+<div id="confetti-container"></div>
+<div id="banner"></div>
+
+<script>
+/* ===== WORD BANK ===== */
+const WORDS = [
+  // LEVEL 1 — CVC (short-a)
+  {w:'cat',p:['c','a','t'],lv:1,e:'🐱'},{w:'bat',p:['b','a','t'],lv:1,e:'🦇'},{w:'hat',p:['h','a','t'],lv:1,e:'🎩'},
+  {w:'rat',p:['r','a','t'],lv:1,e:'🐀'},{w:'van',p:['v','a','n'],lv:1,e:'🚐'},{w:'pan',p:['p','a','n'],lv:1,e:'🍳'},
+  {w:'man',p:['m','a','n'],lv:1,e:'👨'},{w:'can',p:['c','a','n'],lv:1,e:'🥫'},{w:'map',p:['m','a','p'],lv:1,e:'🗺️'},
+  {w:'tap',p:['t','a','p'],lv:1,e:'🚰'},
+  // CVC (short-e)
+  {w:'bed',p:['b','e','d'],lv:1,e:'🛏️'},{w:'red',p:['r','e','d'],lv:1,e:'🔴'},{w:'hen',p:['h','e','n'],lv:1,e:'🐔'},
+  {w:'pen',p:['p','e','n'],lv:1,e:'🖊️'},{w:'ten',p:['t','e','n'],lv:1,e:'🔟'},{w:'pet',p:['p','e','t'],lv:1,e:'🐾'},
+  {w:'net',p:['n','e','t'],lv:1,e:'🥅'},{w:'wet',p:['w','e','t'],lv:1,e:'💧'},{w:'jet',p:['j','e','t'],lv:1,e:'✈️'},
+  {w:'leg',p:['l','e','g'],lv:1,e:'🦵'},
+  // CVC (short-i)
+  {w:'pig',p:['p','i','g'],lv:1,e:'🐷'},{w:'big',p:['b','i','g'],lv:1,e:'🔵'},{w:'dig',p:['d','i','g'],lv:1,e:'⛏️'},
+  {w:'hit',p:['h','i','t'],lv:1,e:'💥'},{w:'sit',p:['s','i','t'],lv:1,e:'🪑'},{w:'pin',p:['p','i','n'],lv:1,e:'📌'},
+  {w:'fin',p:['f','i','n'],lv:1,e:'🦈'},{w:'win',p:['w','i','n'],lv:1,e:'🏆'},{w:'lip',p:['l','i','p'],lv:1,e:'👄'},
+  {w:'zip',p:['z','i','p'],lv:1,e:'🤐'},
+  // CVC (short-o)
+  {w:'dog',p:['d','o','g'],lv:1,e:'🐕'},{w:'log',p:['l','o','g'],lv:1,e:'🪵'},{w:'fog',p:['f','o','g'],lv:1,e:'🌫️'},
+  {w:'hot',p:['h','o','t'],lv:1,e:'🔥'},{w:'pot',p:['p','o','t'],lv:1,e:'🍯'},{w:'dot',p:['d','o','t'],lv:1,e:'⚫'},
+  {w:'hop',p:['h','o','p'],lv:1,e:'🐰'},{w:'mop',p:['m','o','p'],lv:1,e:'🧹'},{w:'top',p:['t','o','p'],lv:1,e:'🔝'},
+  {w:'box',p:['b','o','x'],lv:1,e:'📦'},
+  // CVC (short-u)
+  {w:'bug',p:['b','u','g'],lv:1,e:'🐛'},{w:'rug',p:['r','u','g'],lv:1,e:'🟫'},{w:'hug',p:['h','u','g'],lv:1,e:'🤗'},
+  {w:'sun',p:['s','u','n'],lv:1,e:'☀️'},{w:'run',p:['r','u','n'],lv:1,e:'🏃'},{w:'fun',p:['f','u','n'],lv:1,e:'🎉'},
+  {w:'cup',p:['c','u','p'],lv:1,e:'☕'},{w:'pup',p:['p','u','p'],lv:1,e:'🐶'},{w:'bus',p:['b','u','s'],lv:1,e:'🚌'},
+  {w:'tub',p:['t','u','b'],lv:1,e:'🛁'},
+  // Blends (initial)
+  {w:'frog',p:['f','r','o','g'],lv:1,e:'🐸'},{w:'stop',p:['s','t','o','p'],lv:1,e:'🛑'},
+  {w:'clap',p:['c','l','a','p'],lv:1,e:'👏'},{w:'drip',p:['d','r','i','p'],lv:1,e:'💧'},
+  {w:'flag',p:['f','l','a','g'],lv:1,e:'🏁'},{w:'slip',p:['s','l','i','p'],lv:1,e:'🫧'},
+  {w:'snap',p:['s','n','a','p'],lv:1,e:'🫰'},{w:'trip',p:['t','r','i','p'],lv:1,e:'🧳'},
+  {w:'grab',p:['g','r','a','b'],lv:1,e:'✊'},{w:'swim',p:['s','w','i','m'],lv:1,e:'🏊'},
+  {w:'step',p:['s','t','e','p'],lv:1,e:'👣'},{w:'drum',p:['d','r','u','m'],lv:1,e:'🥁'},
+  {w:'crab',p:['c','r','a','b'],lv:1,e:'🦀'},{w:'glad',p:['g','l','a','d'],lv:1,e:'😊'},
+  {w:'grin',p:['g','r','i','n'],lv:1,e:'😁'},{w:'flip',p:['f','l','i','p'],lv:1,e:'🔄'},
+  {w:'spot',p:['s','p','o','t'],lv:1,e:'🔵'},{w:'plop',p:['p','l','o','p'],lv:1,e:'💦'},
+  // Blends (final)
+  {w:'jump',p:['j','u','m','p'],lv:1,e:'🦘'},{w:'best',p:['b','e','s','t'],lv:1,e:'⭐'},
+  {w:'hand',p:['h','a','n','d'],lv:1,e:'✋'},{w:'milk',p:['m','i','l','k'],lv:1,e:'🥛'},
+  {w:'pond',p:['p','o','n','d'],lv:1,e:'🌊'},{w:'lamp',p:['l','a','m','p'],lv:1,e:'💡'},
+  {w:'gift',p:['g','i','f','t'],lv:1,e:'🎁'},{w:'belt',p:['b','e','l','t'],lv:1,e:'👖'},
+  {w:'dust',p:['d','u','s','t'],lv:1,e:'💨'},{w:'nest',p:['n','e','s','t'],lv:1,e:'🪹'},
+  // Digraphs
+  {w:'shop',p:['sh','o','p'],lv:1,e:'🛒'},{w:'ship',p:['sh','i','p'],lv:1,e:'🚢'},
+  {w:'fish',p:['f','i','sh'],lv:1,e:'🐟'},{w:'dish',p:['d','i','sh'],lv:1,e:'🍽️'},
+  {w:'wish',p:['w','i','sh'],lv:1,e:'⭐'},{w:'rush',p:['r','u','sh'],lv:1,e:'💨'},
+  {w:'chop',p:['ch','o','p'],lv:1,e:'🪓'},{w:'chin',p:['ch','i','n'],lv:1,e:'😊'},
+  {w:'chip',p:['ch','i','p'],lv:1,e:'🍟'},{w:'chat',p:['ch','a','t'],lv:1,e:'💬'},
+  {w:'thin',p:['th','i','n'],lv:1,e:'📏'},{w:'bath',p:['b','a','th'],lv:1,e:'🛁'},
+  {w:'math',p:['m','a','th'],lv:1,e:'➕'},{w:'path',p:['p','a','th'],lv:1,e:'🛤️'},
+  {w:'crush',p:['c','r','u','sh'],lv:1,e:'💪'},{w:'brush',p:['b','r','u','sh'],lv:1,e:'🖌️'},
+  {w:'fresh',p:['f','r','e','sh'],lv:1,e:'🌿'},
+
+  // LEVEL 2 — Two-syllable words
+  // Compound words
+  {w:'sunset',p:['sun','set'],lv:2,e:'🌅'},{w:'hotdog',p:['hot','dog'],lv:2,e:'🌭'},
+  {w:'catnap',p:['cat','nap'],lv:2,e:'😺'},{w:'bathtub',p:['bath','tub'],lv:2,e:'🛁'},
+  {w:'catfish',p:['cat','fish'],lv:2,e:'🐟'},{w:'pigpen',p:['pig','pen'],lv:2,e:'🐷'},
+  {w:'sandbox',p:['sand','box'],lv:2,e:'🏖️'},{w:'cobweb',p:['cob','web'],lv:2,e:'🕸️'},
+  {w:'laptop',p:['lap','top'],lv:2,e:'💻'},{w:'hilltop',p:['hill','top'],lv:2,e:'⛰️'},
+  {w:'zigzag',p:['zig','zag'],lv:2,e:'〰️'},{w:'sunlit',p:['sun','lit'],lv:2,e:'☀️'},
+  {w:'cannot',p:['can','not'],lv:2,e:'🚫'},{w:'dustbin',p:['dust','bin'],lv:2,e:'🗑️'},
+  {w:'eggcup',p:['egg','cup'],lv:2,e:'🥚'},{w:'nutmeg',p:['nut','meg'],lv:2,e:'🥜'},
+  // Double-consonant words
+  {w:'rabbit',p:['rab','bit'],lv:2,e:'🐰'},{w:'kitten',p:['kit','ten'],lv:2,e:'🐱'},
+  {w:'muffin',p:['muf','fin'],lv:2,e:'🧁'},{w:'button',p:['but','ton'],lv:2,e:'🔘'},
+  {w:'mitten',p:['mit','ten'],lv:2,e:'🧤'},{w:'ribbon',p:['rib','bon'],lv:2,e:'🎀'},
+  {w:'cotton',p:['cot','ton'],lv:2,e:'☁️'},{w:'puppet',p:['pup','pet'],lv:2,e:'🎭'},
+  // -er, -er words
+  {w:'hammer',p:['ham','mer'],lv:2,e:'🔨'},{w:'ladder',p:['lad','der'],lv:2,e:'🪜'},
+  {w:'dinner',p:['din','ner'],lv:2,e:'🍽️'},{w:'letter',p:['let','ter'],lv:2,e:'✉️'},
+  {w:'butter',p:['but','ter'],lv:2,e:'🧈'},{w:'summer',p:['sum','mer'],lv:2,e:'☀️'},
+  {w:'winter',p:['win','ter'],lv:2,e:'❄️'},
+  // -y words
+  {w:'happy',p:['hap','py'],lv:2,e:'😊'},{w:'funny',p:['fun','ny'],lv:2,e:'😂'},
+  {w:'sunny',p:['sun','ny'],lv:2,e:'🌞'},{w:'puppy',p:['pup','py'],lv:2,e:'🐶'},
+  {w:'bunny',p:['bun','ny'],lv:2,e:'🐰'},{w:'penny',p:['pen','ny'],lv:2,e:'💰'},
+  {w:'jelly',p:['jel','ly'],lv:2,e:'🟣'},{w:'foggy',p:['fog','gy'],lv:2,e:'🌫️'},
+  {w:'muddy',p:['mud','dy'],lv:2,e:'🟤'},{w:'silly',p:['sil','ly'],lv:2,e:'🤪'},
+
+  // LEVEL 3 — Three-syllable words
+  {w:'banana',p:['ba','na','na'],lv:3,e:'🍌'},{w:'tomato',p:['to','ma','to'],lv:3,e:'🍅'},
+  {w:'potato',p:['po','ta','to'],lv:3,e:'🥔'},{w:'animal',p:['an','i','mal'],lv:3,e:'🐾'},
+  {w:'elephant',p:['el','e','phant'],lv:3,e:'🐘'},{w:'umbrella',p:['um','brel','la'],lv:3,e:'☂️'},
+  {w:'dinosaur',p:['di','no','saur'],lv:3,e:'🦕'},{w:'butterfly',p:['but','ter','fly'],lv:3,e:'🦋'},
+  {w:'ladybug',p:['la','dy','bug'],lv:3,e:'🐞'},{w:'kangaroo',p:['kan','ga','roo'],lv:3,e:'🦘'},
+  {w:'octopus',p:['oc','to','pus'],lv:3,e:'🐙'},{w:'broccoli',p:['broc','co','li'],lv:3,e:'🥦'},
+  {w:'pineapple',p:['pine','ap','ple'],lv:3,e:'🍍'},{w:'hamburger',p:['ham','bur','ger'],lv:3,e:'🍔'},
+  {w:'lemonade',p:['lem','on','ade'],lv:3,e:'🍋'},{w:'alphabet',p:['al','pha','bet'],lv:3,e:'🔤'},
+  {w:'basketball',p:['bas','ket','ball'],lv:3,e:'🏀'},{w:'wonderful',p:['won','der','ful'],lv:3,e:'🌟'},
+  {w:'adventure',p:['ad','ven','ture'],lv:3,e:'🗺️'},{w:'fantastic',p:['fan','tas','tic'],lv:3,e:'✨'},
+  {w:'dragonfly',p:['drag','on','fly'],lv:3,e:'🪰'},{w:'grandfather',p:['grand','fa','ther'],lv:3,e:'👴'},
+  {w:'understand',p:['un','der','stand'],lv:3,e:'🧠'},{w:'together',p:['to','geth','er'],lv:3,e:'🤝'},
+  {w:'yesterday',p:['yes','ter','day'],lv:3,e:'📅'},{w:'crocodile',p:['croc','o','dile'],lv:3,e:'🐊'},
+  {w:'strawberry',p:['straw','ber','ry'],lv:3,e:'🍓'},{w:'trampoline',p:['tram','po','line'],lv:3,e:'🤸'},
+  {w:'important',p:['im','por','tant'],lv:3,e:'❗'},{w:'remember',p:['re','mem','ber'],lv:3,e:'💭'},
+];
+
+const LEVEL_INFO = [
+  { num: 1, name: 'Sound It Out', desc: 'CVC words, blends & digraphs', icon: '🔤', color: 'var(--primary)', unlockReq: 0 },
+  { num: 2, name: 'Two Syllables', desc: 'Two-syllable words', icon: '📗', color: 'var(--blue)', unlockReq: 30 },
+  { num: 3, name: 'Three Syllables', desc: 'Three-syllable words', icon: '📕', color: 'var(--purple)', unlockReq: 20 },
+];
+
+const ACHIEVEMENTS = [
+  { id: 'first_word', name: 'First Word!', icon: '🌟', desc: 'Get your first word right' },
+  { id: 'five_stars', name: 'Five Stars', icon: '⭐', desc: 'Earn 5 stars' },
+  { id: 'star_25', name: 'Star Collector', icon: '🌟', desc: 'Earn 25 stars' },
+  { id: 'star_100', name: 'Super Star', icon: '💫', desc: 'Earn 100 stars' },
+  { id: 'star_500', name: 'Mega Star', icon: '🏅', desc: 'Earn 500 stars' },
+  { id: 'cvc_champ', name: 'CVC Champion', icon: '🏆', desc: 'Master 30 one-syllable words' },
+  { id: 'blend_boss', name: 'Blend Boss', icon: '👑', desc: 'Master 20 two-syllable words' },
+  { id: 'digraph_dynamo', name: 'Triple Threat', icon: '🦁', desc: 'Master 15 three-syllable words' },
+  { id: 'blending_king', name: 'Blending King', icon: '👑', desc: 'Master all words!' },
+  { id: 'perfect', name: 'Perfect!', icon: '💯', desc: 'Get all 8 right in a session' },
+  { id: 'streak_3', name: '3 Day Streak', icon: '🔥', desc: 'Practice 3 days in a row' },
+  { id: 'streak_7', name: 'Week Warrior', icon: '⚡', desc: 'Practice 7 days in a row' },
+  { id: 'streak_14', name: 'Two Week Titan', icon: '🏋️', desc: 'Practice 14 days in a row' },
+  { id: 'speed_5', name: 'Speed Demon', icon: '💨', desc: 'Answer 5 words under 5s each' },
+];
+
+/* Audio files are in audio/words/, audio/blend/, audio/seg/ */
+
+/* ===== STATE ===== */
+const STORAGE_KEY = 'blending_king_state';
+const DEFAULT_STATE = {
+  profile: { name: '', createdAt: null, totalStars: 0, dailyStreak: 0, lastPracticeDate: null, sessionsCompleted: 0 },
+  words: {},
+  achievements: [],
+  sessions: [],
+  activeLevel: 1,
+  firebaseUid: null,
+};
+
+let S; // current state
+let audioCtx;
+
+function initWordState() {
+  WORDS.forEach(w => {
+    if (!S.words[w.w]) {
+      S.words[w.w] = { level: 0, correct: 0, consecutive: 0, times: [], lastPracticed: null };
+    }
+  });
+}
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    S = raw ? JSON.parse(raw) : JSON.parse(JSON.stringify(DEFAULT_STATE));
+  } catch { S = JSON.parse(JSON.stringify(DEFAULT_STATE)); }
+  initWordState();
+}
+
+function saveState() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(S)); } catch {}
+  debouncedSync();
+}
+
+/* ===== HELPERS ===== */
+function wordsForLevel(lv) { return WORDS.filter(w => w.lv === lv); }
+function masteredCount(lv) {
+  return wordsForLevel(lv).filter(w => S.words[w.w] && S.words[w.w].level >= 3).length;
+}
+function totalMastered() { return WORDS.filter(w => S.words[w.w] && S.words[w.w].level >= 3).length; }
+function isLevelUnlocked(lv) {
+  if (lv === 1) return true;
+  if (lv === 2) return masteredCount(1) >= LEVEL_INFO[1].unlockReq;
+  if (lv === 3) return masteredCount(2) >= LEVEL_INFO[2].unlockReq;
+  return false;
+}
+function highestUnlockedLevel() {
+  if (isLevelUnlocked(3)) return 3;
+  if (isLevelUnlocked(2)) return 2;
+  return 1;
+}
+function todayStr() { return new Date().toISOString().slice(0, 10); }
+function shuffle(arr) { const a = [...arr]; for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+
+/* ===== AUDIO ===== */
+function getAudioCtx() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); return audioCtx; }
+
+function playTone(freq, dur, type = 'sine', vol = 0.15) {
+  try {
+    const ctx = getAudioCtx();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = type; osc.frequency.value = freq;
+    gain.gain.setValueAtTime(vol, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur);
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.start(); osc.stop(ctx.currentTime + dur);
+  } catch {}
+}
+
+function sfxCorrect() { playTone(523, 0.15); setTimeout(() => playTone(659, 0.15), 100); setTimeout(() => playTone(784, 0.2), 200); }
+function sfxWrong() { playTone(250, 0.3, 'triangle', 0.1); }
+function sfxTap() { playTone(880, 0.08, 'sine', 0.08); }
+function sfxFanfare() { playTone(523,0.15); setTimeout(()=>playTone(659,0.15),120); setTimeout(()=>playTone(784,0.15),240); setTimeout(()=>playTone(1047,0.3),360); }
+function sfxStar() { playTone(1200, 0.1, 'sine', 0.06); }
+
+/* Audio file playback (replaces speech synthesis) */
+const audioCache = {};
+
+/* Unlock audio on first user tap (required by mobile browsers) */
+let audioUnlocked = false;
+function unlockAudio() {
+  if (audioUnlocked) return;
+  const a = new Audio();
+  a.play().then(() => a.pause()).catch(() => {});
+  if (audioCtx) audioCtx.resume().catch(() => {});
+  audioUnlocked = true;
+}
+document.addEventListener('click', unlockAudio, { once: false });
+document.addEventListener('touchstart', unlockAudio, { once: false });
+
+function playAudio(path) {
+  return new Promise(resolve => {
+    try {
+      if (audioCache[path]) {
+        const a = audioCache[path].cloneNode();
+        a.onended = resolve;
+        a.onerror = (e) => { console.warn('Audio error:', path, e); resolve(); };
+        a.play().catch(e => { console.warn('Audio play failed:', path, e); resolve(); });
+        return;
+      }
+      const a = new Audio(path);
+      a.preload = 'auto';
+      a.onended = () => { audioCache[path] = a; resolve(); };
+      a.onerror = (e) => { console.warn('Audio load error:', path, e); resolve(); };
+      a.play().catch(e => { console.warn('Audio play failed:', path, e); resolve(); });
+    } catch (e) { console.warn('Audio exception:', path, e); resolve(); }
+  });
+}
+
+function speakPhoneme(ph) { return playAudio('audio/seg/' + ph + '.mp3'); }
+function speakSegment(seg) { return playAudio('audio/seg/' + seg + '.mp3'); }
+function speakWord(word) { return playAudio('audio/words/' + word + '.mp3'); }
+function playBlended(word) { return playAudio('audio/blend/' + word + '.mp3'); }
+
+async function playBlendedWithBubbles(prob) {
+  /* Play the smooth blended audio file while animating bubbles */
+  const segs = prob.p.length;
+  const segDur = 600; // ms per segment for bubble animation
+
+  // Play blended audio and animate bubbles together
+  const audioPromise = playAudio('audio/blend/' + prob.w + '.mp3');
+  for (let i = 0; i < segs; i++) {
+    highlightBubble(i);
+    await delay(segDur);
+  }
+  resetBubbles();
+  await audioPromise;
+}
+
+function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+/* ===== ANIMATIONS ===== */
+function showConfetti() {
+  const c = document.getElementById('confetti-container');
+  const colors = ['#FF6B35','#42A5F5','#4CAF50','#FFC107','#AB47BC','#FF7043','#E91E63'];
+  for (let i = 0; i < 40; i++) {
+    const el = document.createElement('div');
+    el.className = 'confetti';
+    el.style.left = Math.random() * 100 + '%';
+    el.style.background = colors[Math.floor(Math.random() * colors.length)];
+    el.style.animationDelay = Math.random() * 0.8 + 's';
+    el.style.width = (6 + Math.random() * 8) + 'px';
+    el.style.height = (6 + Math.random() * 8) + 'px';
+    c.appendChild(el);
+  }
+  setTimeout(() => c.innerHTML = '', 3000);
+}
+
+function showStarAt(x, y) {
+  const el = document.createElement('div');
+  el.className = 'star-float';
+  el.textContent = '⭐';
+  el.style.left = x + 'px'; el.style.top = y + 'px';
+  document.body.appendChild(el);
+  sfxStar();
+  setTimeout(() => el.remove(), 900);
+}
+
+function showBanner(text) {
+  const b = document.getElementById('banner');
+  b.textContent = text;
+  b.className = '';
+  void b.offsetWidth;
+  b.className = 'show';
+}
+
+/* ===== NAVIGATION ===== */
+let currentView = 'welcome';
+
+function showView(id) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  const view = document.getElementById('view-' + id);
+  if (view) { view.classList.add('active'); view.classList.add('fade-in'); }
+  currentView = id;
+  const nav = document.getElementById('bottom-nav');
+  nav.classList.toggle('hidden', id === 'welcome');
+  document.querySelectorAll('.nav-btn').forEach(b => {
+    const bv = b.dataset.view;
+    b.classList.toggle('active', bv === id || (bv === 'practice-start' && (id === 'practice' || id === 'results')));
+  });
+  if (id === 'dashboard') renderDashboard();
+  if (id === 'grid') renderGrid();
+  if (id === 'achievements') renderAchievements();
+}
+
+document.querySelectorAll('.nav-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const v = btn.dataset.view;
+    if (v === 'practice-start') startSession();
+    else showView(v);
+  });
+});
+
+/* ===== WELCOME ===== */
+const nameInput = document.getElementById('name-input');
+const startBtn = document.getElementById('start-btn');
+nameInput.addEventListener('input', () => { startBtn.disabled = !nameInput.value.trim(); });
+nameInput.addEventListener('keydown', e => { if (e.key === 'Enter' && nameInput.value.trim()) startBtn.click(); });
+startBtn.addEventListener('click', () => {
+  S.profile.name = nameInput.value.trim();
+  if (!S.profile.createdAt) S.profile.createdAt = Date.now();
+  saveState();
+  showView('dashboard');
+});
+
+/* ===== DASHBOARD ===== */
+function renderDashboard() {
+  const name = S.profile.name || 'Friend';
+  document.getElementById('dash-greeting').textContent = `Hi ${name}! 👑`;
+  const highest = highestUnlockedLevel();
+  document.getElementById('dash-level-badge').textContent = `Level ${S.activeLevel} — ${LEVEL_INFO[S.activeLevel - 1].name}`;
+
+  // Progress ring
+  const m = totalMastered();
+  const total = WORDS.length;
+  const pct = total ? Math.round(m / total * 100) : 0;
+  const circumference = 2 * Math.PI * 66;
+  const offset = circumference - (pct / 100) * circumference;
+  document.getElementById('progress-ring').style.strokeDashoffset = offset;
+  document.getElementById('progress-pct').textContent = pct + '%';
+
+  // Stats
+  document.getElementById('stat-stars').textContent = S.profile.totalStars;
+  document.getElementById('stat-streak').textContent = S.profile.dailyStreak;
+  document.getElementById('stat-words').textContent = m;
+
+  // Level cards
+  const lc = document.getElementById('level-cards');
+  lc.innerHTML = '';
+  LEVEL_INFO.forEach(info => {
+    const unlocked = isLevelUnlocked(info.num);
+    const words = wordsForLevel(info.num);
+    const mastered = masteredCount(info.num);
+    const pctLv = words.length ? Math.round(mastered / words.length * 100) : 0;
+    const card = document.createElement('div');
+    card.className = 'level-card' + (unlocked ? '' : ' locked');
+    const prevLvMastered = info.num > 1 ? masteredCount(info.num - 1) : 0;
+    const neededMsg = !unlocked ? `(Need ${info.unlockReq - prevLvMastered} more from Level ${info.num - 1})` : '';
+    card.innerHTML = `
+      <div class="level-icon">${info.icon}</div>
+      <div class="level-info">
+        <div class="level-name">Level ${info.num}: ${info.name}</div>
+        <div class="level-desc">${info.desc} ${neededMsg}</div>
+        <div class="level-progress"><div class="level-progress-fill" style="width:${pctLv}%;background:${info.color}"></div></div>
+      </div>
+      ${unlocked ? (pctLv === 100 ? '<span class="level-check">✅</span>' : '') : '<span class="level-lock">🔒</span>'}
+    `;
+    if (unlocked) {
+      card.addEventListener('click', () => {
+        S.activeLevel = info.num;
+        saveState();
+        renderDashboard();
+      });
+    }
+    lc.appendChild(card);
+  });
+}
+
+document.getElementById('practice-btn').addEventListener('click', startSession);
+document.getElementById('play-again-btn').addEventListener('click', startSession);
+document.getElementById('home-btn').addEventListener('click', () => showView('dashboard'));
+
+/* ===== QUIZ ENGINE ===== */
+let quiz = { problems: [], idx: 0, score: 0, stars: 0, streak: 0, bestStreak: 0, startTime: 0, speedUnder5: 0, mode: null, answering: false };
+let currentBubbles = [];
+
+function selectProblems() {
+  const lv = S.activeLevel;
+  const lvWords = wordsForLevel(lv);
+  // Categorize
+  const newW = [], learning = [], review = [];
+  lvWords.forEach(w => {
+    const ws = S.words[w.w];
+    if (ws.level === 0) newW.push(w);
+    else if (ws.level < 3) learning.push(w);
+    else review.push(w);
+  });
+
+  // Priority: learning (highest), new, review
+  let pool = [];
+  pool.push(...shuffle(learning));
+  pool.push(...shuffle(newW));
+  pool.push(...shuffle(review));
+
+  // Also mix in a couple from previous levels for review
+  if (lv > 1) {
+    const prevReview = shuffle(wordsForLevel(lv - 1).filter(w => S.words[w.w].level >= 2)).slice(0, 2);
+    pool.push(...prevReview);
+  }
+
+  // Pick 8, but ensure variety
+  const selected = [];
+  const used = new Set();
+  for (const w of pool) {
+    if (selected.length >= 8) break;
+    if (!used.has(w.w)) { selected.push(w); used.add(w.w); }
+  }
+  // Fill if needed
+  if (selected.length < 8) {
+    for (const w of shuffle(lvWords)) {
+      if (selected.length >= 8) break;
+      if (!used.has(w.w)) { selected.push(w); used.add(w.w); }
+    }
+  }
+
+  return shuffle(selected);
+}
+
+function getDistractors(target, count = 3) {
+  const sameLv = WORDS.filter(w => w.lv === target.lv && w.w !== target.w);
+  return shuffle(sameLv).slice(0, count);
+}
+
+function startSession() {
+  quiz = { problems: selectProblems(), idx: 0, score: 0, stars: 0, streak: 0, bestStreak: 0, startTime: 0, speedUnder5: 0, answering: false };
+  showView('practice');
+  showProblem();
+}
+
+function showProblem() {
+  if (quiz.idx >= quiz.problems.length) { endSession(); return; }
+  const prob = quiz.problems[quiz.idx];
+  quiz.answering = false;
+  quiz.startTime = Date.now();
+
+  document.getElementById('quiz-count').textContent = `${quiz.idx + 1}/${quiz.problems.length}`;
+  document.getElementById('quiz-progress').style.width = (quiz.idx / quiz.problems.length * 100) + '%';
+  document.getElementById('quiz-streak').textContent = quiz.streak >= 2 ? '🔥' + quiz.streak : '';
+
+  const card = document.getElementById('quiz-card');
+  const distractors = getDistractors(prob);
+  const choices = shuffle([prob, ...distractors]);
+
+  card.innerHTML = `
+    <div class="quiz-instruction">What word is this?</div>
+    <img class="quiz-img" src="images/${prob.w}.jpg" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><div class="quiz-emoji" style="display:none">${prob.e || '📖'}</div>
+    <button class="replay-btn" id="replay-btn">🔊 Hear Again</button>
+    <div class="choices" id="choices">
+      ${choices.map((c, i) => `
+        <div class="choice-btn" data-word="${c.w}" id="choice-${i}">
+          <div class="choice-word">${c.w}</div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+
+  // Say the word after a short beat
+  setTimeout(() => speakWord(prob.w), 400);
+
+  // Replay button
+  document.getElementById('replay-btn').addEventListener('click', () => speakWord(prob.w));
+
+  // Choice buttons
+  document.querySelectorAll('.choice-btn').forEach(btn => {
+    btn.addEventListener('click', () => handleAnswer(btn, prob));
+  });
+}
+
+async function handleAnswer(btn, prob) {
+  if (quiz.answering) return;
+  quiz.answering = true;
+  const word = btn.dataset.word;
+  const elapsed = (Date.now() - quiz.startTime) / 1000;
+
+  if (word === prob.w) {
+    btn.classList.add('correct');
+    sfxCorrect();
+    recordCorrect(prob, elapsed);
+    const rect = btn.getBoundingClientRect();
+    showStarAt(rect.left + rect.width / 2 - 15, rect.top);
+    await speakWord(prob.w);
+    await delay(400);
+    quiz.idx++;
+    showProblem();
+  } else {
+    btn.classList.add('wrong');
+    sfxWrong();
+    quiz.streak = 0;
+    document.getElementById('quiz-streak').textContent = '';
+    await delay(600);
+    btn.classList.remove('wrong');
+    quiz.answering = false;
+  }
+}
+
+/* ----- SCORING ----- */
+function recordCorrect(prob, elapsed) {
+  const ws = S.words[prob.w];
+  ws.correct++;
+  ws.consecutive++;
+  ws.times.push(elapsed);
+  if (ws.times.length > 3) ws.times.shift();
+  ws.lastPracticed = Date.now();
+
+  // Update mastery level
+  const avgTime = ws.times.reduce((a, b) => a + b, 0) / ws.times.length;
+  if (ws.consecutive >= 5 && avgTime < 8) ws.level = 3;
+  else if (ws.consecutive >= 3) ws.level = 2;
+  else if (ws.consecutive >= 1) ws.level = 1;
+
+  // Stars
+  let earned = 1;
+  if (elapsed < 6) earned = 2;
+  if (elapsed < 4) earned = 3;
+  quiz.stars += earned;
+  quiz.score++;
+  quiz.streak++;
+  if (quiz.streak > quiz.bestStreak) quiz.bestStreak = quiz.streak;
+  if (elapsed < 5) quiz.speedUnder5++;
+
+  S.profile.totalStars += earned;
+  saveState();
+}
+
+/* ----- SESSION END ----- */
+function endSession() {
+  // Update streak
+  const today = todayStr();
+  if (S.profile.lastPracticeDate !== today) {
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yStr = yesterday.toISOString().slice(0, 10);
+    if (S.profile.lastPracticeDate === yStr) S.profile.dailyStreak++;
+    else S.profile.dailyStreak = 1;
+    S.profile.lastPracticeDate = today;
+  }
+  S.profile.sessionsCompleted++;
+
+  // Save session
+  S.sessions.push({ date: today, score: quiz.score, total: quiz.problems.length, stars: quiz.stars });
+  if (S.sessions.length > 50) S.sessions = S.sessions.slice(-50);
+
+  // Auto-advance level
+  const newHighest = highestUnlockedLevel();
+  if (newHighest > S.activeLevel) {
+    S.activeLevel = newHighest;
+    showBanner(`🎉 Level ${newHighest} Unlocked!`);
+  }
+
+  saveState();
+  checkAchievements();
+
+  // Render results
+  const perfect = quiz.score === quiz.problems.length;
+  document.getElementById('results-title').textContent = perfect ? 'Perfect! 🎉' : quiz.score >= 6 ? 'Great Job! 🌟' : 'Good Try! 👏';
+  document.getElementById('results-stars').textContent = '⭐'.repeat(Math.min(quiz.stars, 20));
+  document.getElementById('results-correct').innerHTML = `<b>${quiz.score}</b> of <b>${quiz.problems.length}</b> correct`;
+  document.getElementById('results-streak').innerHTML = `Best streak: <b>${quiz.bestStreak}</b> 🔥`;
+  document.getElementById('results-new').innerHTML = `Stars earned: <b>${quiz.stars}</b> ⭐`;
+
+  showView('results');
+  if (perfect) { sfxFanfare(); showConfetti(); }
+  else sfxCorrect();
+}
+
+/* ===== WORD GRID ===== */
+let gridLevel = 1;
+function renderGrid() {
+  // Tabs
+  const tabs = document.getElementById('grid-tabs');
+  tabs.innerHTML = '';
+  LEVEL_INFO.forEach(info => {
+    const unlocked = isLevelUnlocked(info.num);
+    const tab = document.createElement('div');
+    tab.className = 'grid-tab' + (info.num === gridLevel ? ' active' : '') + (!unlocked ? ' locked' : '');
+    tab.textContent = `Lv${info.num}: ${info.name}`;
+    if (unlocked) {
+      tab.addEventListener('click', () => { gridLevel = info.num; renderGrid(); });
+    }
+    tabs.appendChild(tab);
+  });
+
+  // Grid
+  const grid = document.getElementById('word-grid');
+  grid.innerHTML = '';
+  const words = wordsForLevel(gridLevel);
+  words.forEach(w => {
+    const ws = S.words[w.w];
+    const cls = ws.level >= 3 ? 'mastered' : ws.level >= 1 ? 'learning' : 'new';
+    const tile = document.createElement('div');
+    tile.className = `word-tile ${cls}`;
+    tile.innerHTML = `<img class="word-tile-img" src="images/${w.w}.jpg" alt="" onerror="this.outerHTML='<div class=word-tile-emoji>${w.e||''}</div>'"><div class="word-tile-word">${w.w}</div>`;
+    tile.addEventListener('click', async () => {
+      sfxTap();
+      await speakWord(w.w);
+    });
+    grid.appendChild(tile);
+  });
+}
+
+/* ===== ACHIEVEMENTS ===== */
+function checkAchievements() {
+  const a = S.achievements;
+  const add = id => { if (!a.includes(id)) { a.push(id); showBanner('🏆 ' + ACHIEVEMENTS.find(x => x.id === id).name + '!'); } };
+
+  if (quiz.score > 0) add('first_word');
+  if (S.profile.totalStars >= 5) add('five_stars');
+  if (S.profile.totalStars >= 25) add('star_25');
+  if (S.profile.totalStars >= 100) add('star_100');
+  if (S.profile.totalStars >= 500) add('star_500');
+  if (masteredCount(1) >= 30) add('cvc_champ');
+  if (masteredCount(2) >= 20) add('blend_boss');
+  if (masteredCount(3) >= 15) add('digraph_dynamo');
+  if (totalMastered() >= WORDS.length) add('blending_king');
+  if (quiz.score === quiz.problems.length && quiz.problems.length === 8) add('perfect');
+  if (S.profile.dailyStreak >= 3) add('streak_3');
+  if (S.profile.dailyStreak >= 7) add('streak_7');
+  if (S.profile.dailyStreak >= 14) add('streak_14');
+  if (quiz.speedUnder5 >= 5) add('speed_5');
+
+  saveState();
+}
+
+function renderAchievements() {
+  const grid = document.getElementById('badge-grid');
+  grid.innerHTML = '';
+  ACHIEVEMENTS.forEach(a => {
+    const earned = S.achievements.includes(a.id);
+    const card = document.createElement('div');
+    card.className = 'badge-card' + (earned ? '' : ' locked');
+    card.innerHTML = `
+      <div class="badge-icon">${a.icon}</div>
+      <div class="badge-name">${a.name}</div>
+      <div class="badge-desc">${a.desc}</div>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+/* ===== FIREBASE ===== */
+// TODO: Replace with your Firebase project config
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyCwzfkzv1ACbNyu6vEZll7CqiigmKxExUA",
+  authDomain: "blendingbadge.firebaseapp.com",
+  projectId: "blendingbadge",
+  storageBucket: "blendingbadge.firebasestorage.app",
+  messagingSenderId: "148947248998",
+  appId: "1:148947248998:web:41cc58ba76d85f11968aa7"
+};
+
+let db = null, fbUser = null;
+let syncTimer = null;
+
+function isFirebaseConfigured() {
+  return FIREBASE_CONFIG.apiKey && !FIREBASE_CONFIG.apiKey.startsWith('YOUR_');
+}
+
+function debouncedSync() {
+  if (!isFirebaseConfigured() || !db || !fbUser) return;
+  clearTimeout(syncTimer);
+  syncTimer = setTimeout(syncToFirebase, 500);
+}
+
+async function initFirebase() {
+  if (!isFirebaseConfigured()) {
+    document.getElementById('sync-section').innerHTML = '<p style="font-size:13px;color:var(--text-light);">Firebase not configured. Data saved locally.</p>';
+    return;
+  }
+  try {
+    if (typeof firebase === 'undefined') return;
+    firebase.initializeApp(FIREBASE_CONFIG);
+    db = firebase.firestore();
+    const auth = firebase.auth();
+    const cred = await auth.signInAnonymously();
+    fbUser = cred.user;
+    S.firebaseUid = fbUser.uid;
+    saveState();
+    syncFromFirebase();
+  } catch (e) { console.warn('Firebase init failed:', e); }
+}
+
+async function syncToFirebase() {
+  if (!db || !fbUser) return;
+  try {
+    await db.collection('users').doc(fbUser.uid).set({
+      state: JSON.stringify(S),
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
+  } catch (e) { console.warn('Sync failed:', e); }
+}
+
+async function syncFromFirebase() {
+  if (!db || !fbUser) return;
+  try {
+    const doc = await db.collection('users').doc(fbUser.uid).get();
+    if (doc.exists) {
+      const remote = JSON.parse(doc.data().state);
+      mergeState(remote);
+    }
+  } catch (e) { console.warn('Sync read failed:', e); }
+}
+
+function mergeState(remote) {
+  // Prefer higher mastery & more stars
+  if (remote.profile && remote.profile.totalStars > S.profile.totalStars) {
+    S.profile.totalStars = remote.profile.totalStars;
+  }
+  if (remote.profile && remote.profile.dailyStreak > S.profile.dailyStreak) {
+    S.profile.dailyStreak = remote.profile.dailyStreak;
+  }
+  if (remote.words) {
+    Object.keys(remote.words).forEach(w => {
+      if (S.words[w] && remote.words[w].level > S.words[w].level) {
+        S.words[w] = remote.words[w];
+      }
+    });
+  }
+  if (remote.achievements) {
+    remote.achievements.forEach(a => { if (!S.achievements.includes(a)) S.achievements.push(a); });
+  }
+  saveState();
+}
+
+// PIN-based sync
+document.getElementById('gen-pin-btn').addEventListener('click', async () => {
+  if (!db || !fbUser) { document.getElementById('sync-status').textContent = 'Firebase not connected'; return; }
+  const pin = String(Math.floor(100000 + Math.random() * 900000));
+  try {
+    await db.collection('sync_pins').doc(pin).set({
+      uid: fbUser.uid,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      expiresAt: new Date(Date.now() + 86400000)
+    });
+    document.getElementById('sync-pin-code').textContent = pin;
+    document.getElementById('sync-pin-display').style.display = 'block';
+  } catch (e) { document.getElementById('sync-status').textContent = 'Failed to generate PIN'; }
+});
+
+document.getElementById('link-pin-btn').addEventListener('click', async () => {
+  if (!db) { document.getElementById('sync-status').textContent = 'Firebase not connected'; return; }
+  const pin = document.getElementById('sync-pin-input').value.trim();
+  if (pin.length !== 6) { document.getElementById('sync-status').textContent = 'Enter a 6-digit PIN'; return; }
+  try {
+    const doc = await db.collection('sync_pins').doc(pin).get();
+    if (!doc.exists) { document.getElementById('sync-status').textContent = 'PIN not found'; return; }
+    const data = doc.data();
+    if (data.expiresAt.toDate() < new Date()) { document.getElementById('sync-status').textContent = 'PIN expired'; return; }
+    const remoteDoc = await db.collection('users').doc(data.uid).get();
+    if (remoteDoc.exists) {
+      mergeState(JSON.parse(remoteDoc.data().state));
+      document.getElementById('sync-status').textContent = '✅ Synced successfully!';
+      renderDashboard();
+    }
+  } catch (e) { document.getElementById('sync-status').textContent = 'Sync failed'; }
+});
+
+/* ===== INIT ===== */
+loadState();
+
+if (S.profile.name) {
+  nameInput.value = S.profile.name;
+  showView('dashboard');
+} else {
+  showView('welcome');
+}
+
+// Check if streak has broken
+if (S.profile.lastPracticeDate) {
+  const last = new Date(S.profile.lastPracticeDate);
+  const now = new Date(todayStr());
+  const diff = Math.floor((now - last) / 86400000);
+  if (diff > 1) { S.profile.dailyStreak = 0; saveState(); }
+}
+
+// Auto-set active level to highest unlocked
+if (S.activeLevel < highestUnlockedLevel()) {
+  S.activeLevel = highestUnlockedLevel();
+  saveState();
+}
+
+// Try loading Firebase SDK dynamically
+if (isFirebaseConfigured()) {
+  const s1 = document.createElement('script');
+  s1.src = 'https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js';
+  s1.onload = () => {
+    const s2 = document.createElement('script');
+    s2.src = 'https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js';
+    s2.onload = () => {
+      const s3 = document.createElement('script');
+      s3.src = 'https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js';
+      s3.onload = () => initFirebase();
+      document.head.appendChild(s3);
+    };
+    document.head.appendChild(s2);
+  };
+  document.head.appendChild(s1);
+}
+</script>
+</body>
+</html>
