@@ -907,13 +907,25 @@ async function handleAnswer(btn, prob) {
     sfxWrong();
     quiz.streak = 0;
     document.getElementById('quiz-streak').textContent = '';
-    await delay(600);
-    btn.classList.remove('wrong');
-    quiz.answering = false;
+    // Show the correct answer briefly
+    document.querySelectorAll('.choice-btn').forEach(b => {
+      if (b.dataset.word === prob.w) b.classList.add('correct');
+    });
+    recordWrong(prob);
+    await delay(1200);
+    quiz.idx++;
+    showProblem();
   }
 }
 
 /* ----- SCORING ----- */
+function recordWrong(prob) {
+  const ws = S.words[prob.w];
+  ws.consecutive = 0;
+  if (ws.level > 0) ws.level = Math.max(1, ws.level - 1);
+  saveState();
+}
+
 function recordCorrect(prob, elapsed) {
   const ws = S.words[prob.w];
   ws.correct++;
